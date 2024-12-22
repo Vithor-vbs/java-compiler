@@ -1,0 +1,165 @@
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+
+// Parser code
+parser code {:
+    // Connect the parser to the scanner
+    Scanner s;
+    Parser(Scanner s) { this.s = s; }
+
+    // Symbol table
+    Map<String, Number> simbolos = new HashMap<>();
+
+    private boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+:}
+
+/* Connect the parser to the scanner */
+init with {: :};
+scan with {: return s.next_token(); :};
+
+/* Terminals (tokens returned by the scanner) */
+terminal SEMI, MAIS, MENOS, VEZES, DIV, ATRIB, LPAREN, RPAREN, LCURLY, RCURLY, VIRGULA,
+         IF, ELSE, WHILE, RETURN, IGUAL_IGUAL, DIFERENTE, MENOR, MAIOR;
+terminal Integer NUMERO;
+terminal Double PONTO_FLUTUANTE;
+terminal String ID;
+
+/* Non-terminals */
+non terminal SyntaxTreeNode programa;
+non terminal SyntaxTreeNode comando;
+non terminal SyntaxTreeNode expressao;
+
+/* Operator precedence */
+precedence left MAIS, MENOS;
+precedence left VEZES, DIV;
+precedence left IGUAL_IGUAL, DIFERENTE, MENOR, MAIOR;
+
+/* Grammar Rules */
+
+/* Program */
+programa ::= programa:p comando:c
+          {:
+              RESULT = new SyntaxTreeNode("Programa");
+              RESULT.addChild(p);
+              RESULT.addChild(c);
+              RESULT.execute(simbolos); // Executa o programa
+          :}
+          | comando:c
+          {:
+              RESULT = new SyntaxTreeNode("Programa");
+              RESULT.addChild(c);
+              RESULT.execute(simbolos); // Executa o comando
+          :}
+;
+
+/* Commands */
+comando ::= ID:i ATRIB expressao:e SEMI
+          {:
+              RESULT = new SyntaxTreeNode("Atribuicao");
+              RESULT.addChild(new SyntaxTreeNode(i));
+              RESULT.addChild(e);
+              simbolos.put(i, e != null && isNumeric(e.getName()) ? Double.valueOf(e.getName()) : 0);
+          :}
+          | IF LPAREN expressao:e RPAREN comando:c1 ELSE comando:c2
+          {:
+              RESULT = new SyntaxTreeNode("If-Else");
+              RESULT.addChild(e);
+              RESULT.addChild(c1);
+              RESULT.addChild(c2);
+          :}
+          | WHILE LPAREN expressao:e RPAREN comando:c
+          {:
+              RESULT = new SyntaxTreeNode("While");
+              RESULT.addChild(e);
+              RESULT.addChild(c);
+          :}
+          | RETURN expressao:e SEMI
+          {:
+              RESULT = new SyntaxTreeNode("Return");
+              RESULT.addChild(e);
+          :}
+          | LCURLY programa:p RCURLY
+          {:
+              RESULT = new SyntaxTreeNode("Bloco");
+              RESULT.addChild(p);
+          :}
+;
+
+/* Expressions */
+expressao ::= expressao:e1 MAIS expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("+");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 MENOS expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("-");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 VEZES expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("*");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 DIV expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("/");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | LPAREN expressao:e RPAREN
+              {:
+                  RESULT = new SyntaxTreeNode("()");
+                  RESULT.addChild(e);
+              :}
+           | NUMERO:n
+              {:
+                  RESULT = new SyntaxTreeNode(n.toString());
+              :}
+           | PONTO_FLUTUANTE:f
+              {:
+                  RESULT = new SyntaxTreeNode(f.toString());
+              :}
+           | ID:i
+              {:
+                  RESULT = new SyntaxTreeNode(i);
+              :}
+           | expressao:e1 IGUAL_IGUAL expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("==");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 DIFERENTE expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("!=");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 MENOR expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode("<");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+           | expressao:e1 MAIOR expressao:e2
+              {:
+                  RESULT = new SyntaxTreeNode(">");
+                  RESULT.addChild(e1);
+                  RESULT.addChild(e2);
+              :}
+;

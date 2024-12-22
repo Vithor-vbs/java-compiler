@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="java-cup-11b">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../Arquivos para Exemplo de Compilador com JFlex e Cup/java-cup-11b.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../Arquivos para Exemplo de Compilador com JFlex e Cup/jflex-full-1.8.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

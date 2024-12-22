@@ -1,0 +1,14 @@
+x = 10;                 // Atribuição simples
+y = (x + 5) * 2;        // Atribuição com expressão aritmética
+
+if (x > 5) {             // Estrutura de controle condicional
+    z = x * 2;
+} else {
+    z = x / 2;
+}
+
+while (z < 50) {         // Estrutura de controle de repetição
+    z = z + 1;
+}
+
+return z;                // Declaração de retorno
